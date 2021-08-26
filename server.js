@@ -5,6 +5,7 @@ const express = require('express')
 const app = express();
 const PORT = 3000;
 const path = require('path')
+const mongoose = require('mongoose')
 const exercises = require('./controllers/exerciseController.js')
 const { exerciseJoiSchema } = require('./joiSchemas.js');
 const CustomError = require('./errorHandlers/CustomError.js');
@@ -16,6 +17,19 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(mongoSanitize({ replaceWith: '_' }))
 
+
+mongoose.connect(process.env.DB_URL, {
+    useNewUrlParser: true,
+    useCreateIndex: true,
+    useUnifiedTopology: true,
+    useFindAndModify: false
+})
+
+const db = mongoose.connection;
+db.on("error", console.error.bind(console, "connection error:"));
+db.once("open", () => {
+    console.log("Database connected");
+})
 
 const validateExercise = (req, res, next) => {
     const { error } = exerciseJoiSchema.validate(req.body)

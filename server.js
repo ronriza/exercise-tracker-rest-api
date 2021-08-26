@@ -1,23 +1,21 @@
 if (process.env.NODE_ENV !== 'production') {
     require('dotenv').config()
 }
-
-const exercises = require('./controllers/exerciseController.js')
 const express = require('express')
+const app = express();
+const PORT = 3000;
 const path = require('path')
-const decodeIDToken = require('./authenticateToken.js');
-const mongoSanitize = require('express-mongo-sanitize')
+const exercises = require('./controllers/exerciseController.js')
 const { exerciseJoiSchema } = require('./joiSchemas.js');
 const CustomError = require('./errorHandlers/CustomError.js');
-const PORT = 3000;
-const app = express();
+const decodeIDToken = require('./authenticateToken.js');
+const mongoSanitize = require('express-mongo-sanitize')
 
 app.use(express.static(path.join(__dirname, 'build')));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(mongoSanitize({
-    replaceWith: '_'
-}))
+app.use(mongoSanitize({ replaceWith: '_' }))
+
 
 const validateExercise = (req, res, next) => {
     const { error } = exerciseJoiSchema.validate(req.body)
@@ -27,7 +25,6 @@ const validateExercise = (req, res, next) => {
         next()
     }
 }
-
 
 
 app.get('/exercises/', decodeIDToken, (req, res, next) => {
@@ -45,7 +42,6 @@ app.get('/exercises/', decodeIDToken, (req, res, next) => {
     }
 });
 
-
 app.post('/exercises', decodeIDToken, validateExercise, (req, res, next) => {
     const auth = req.currentUser
     if (auth) {
@@ -60,10 +56,7 @@ app.post('/exercises', decodeIDToken, validateExercise, (req, res, next) => {
     } else {
         next(new CustomError("Not authorized", 403))
     }
-
 })
-
-
 
 app.put('/exercises/:_id', decodeIDToken, validateExercise, (req, res, next) => {
     const auth = req.currentUser;
@@ -78,7 +71,6 @@ app.put('/exercises/:_id', decodeIDToken, validateExercise, (req, res, next) => 
     } else {
         next(new CustomError("Not authorized", 403))
     }
-
 });
 
 app.delete('/exercises/:_id', decodeIDToken, (req, res, next) => {
@@ -98,18 +90,19 @@ app.delete('/exercises/:_id', decodeIDToken, (req, res, next) => {
     } else {
         next(new CustomError("Not authorized", 403))
     }
-
 });
 
-app.get('/*', function (req, res) {
+
+app.get('/*', (req, res) => {
     res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
 
+
 app.use((err, req, res, next) => {
     console.log(err)
-    const {statusCode = 500} = err;
-    if(!err.message) err.message = 'Something went wrong'
-    res.status(statusCode).json({error: err.message})
+    const { statusCode = 500 } = err;
+    if (!err.message) err.message = 'Something went wrong'
+    res.status(statusCode).json({ error: err.message })
 })
 
 

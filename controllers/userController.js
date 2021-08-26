@@ -5,7 +5,6 @@ module.exports.findOrCreateUser = async (uid) => {
     if (!user){
         const newUser = new User({uid})
         await newUser.save()
-        console.log(newUser.exercises)
         return newUser
     } else {
         return user

@@ -17,8 +17,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(mongoSanitize({ replaceWith: '_' }))
 
-
-mongoose.connect(process.env.DB_URL, {
+const dbUrl = process.env.DB_URL || 'mongodb://localhost:27017/exercises_db'
+mongoose.connect(dbUrl, {
     useNewUrlParser: true,
     useCreateIndex: true,
     useUnifiedTopology: true,

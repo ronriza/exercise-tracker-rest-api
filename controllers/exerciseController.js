@@ -40,9 +40,8 @@ const updateExercise = async (id, props, uid) => {
     }
 
     let formattedDate = new Date(`20${props.date.slice(6)}-${props.date.slice(0,2)}-${props.date.slice(3,5)}`)
-    console.log("formatted date is", formattedDate)
     if (formattedDate.toDateString()==='Invalid Date'){
-        console.log('entered error')
+
         throw new CustomError("Wrong date format", 400)
     }
     props.date = formattedDate

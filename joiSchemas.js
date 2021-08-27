@@ -1,6 +1,8 @@
 const BaseJoi = require('joi');
 const sanitizeHtml = require('sanitize-html')
 
+
+// extension for sanitizing html
 const extension = (joi) => ({
     type: 'string',
     base: joi.string(),

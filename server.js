@@ -17,6 +17,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(mongoSanitize({ replaceWith: '_' }))
 
+
+// CONNECT TO MONGODB
 const dbUrl = process.env.DB_URL || 'mongodb://localhost:27017/exercises_db'
 mongoose.connect(dbUrl, {
     useNewUrlParser: true,
@@ -24,13 +26,13 @@ mongoose.connect(dbUrl, {
     useUnifiedTopology: true,
     useFindAndModify: false
 })
-
 const db = mongoose.connection;
 db.on("error", console.error.bind(console, "connection error:"));
 db.once("open", () => {
     console.log("Database connected");
 })
 
+// Joi validation middleware
 const validateExercise = (req, res, next) => {
     const { error } = exerciseJoiSchema.validate(req.body)
     if (error) {
@@ -40,11 +42,11 @@ const validateExercise = (req, res, next) => {
     }
 }
 
-
+// route for retrieving user's exercises
 app.get('/exercises/', decodeIDToken, (req, res, next) => {
     const auth = req.currentUser;
     if (auth) {
-        exercises.findExercises({ uid: auth.uid })
+        exercises.findExercises(auth.uid)
             .then(exercises => {
                 return res.status(200).json(exercises);
             })
@@ -56,6 +58,7 @@ app.get('/exercises/', decodeIDToken, (req, res, next) => {
     }
 });
 
+// route for posting a new exercise
 app.post('/exercises', decodeIDToken, validateExercise, (req, res, next) => {
     const auth = req.currentUser
     if (auth) {
@@ -72,6 +75,7 @@ app.post('/exercises', decodeIDToken, validateExercise, (req, res, next) => {
     }
 })
 
+// route for updating existing exercise
 app.put('/exercises/:_id', decodeIDToken, validateExercise, (req, res, next) => {
     const auth = req.currentUser;
     if (auth) {
@@ -87,6 +91,7 @@ app.put('/exercises/:_id', decodeIDToken, validateExercise, (req, res, next) => 
     }
 });
 
+// rute for deleting existing exercise
 app.delete('/exercises/:_id', decodeIDToken, (req, res, next) => {
     const auth = req.currentUser
     if (auth) {
@@ -106,19 +111,18 @@ app.delete('/exercises/:_id', decodeIDToken, (req, res, next) => {
     }
 });
 
-
+// send static files if no route matches
 app.get('/*', (req, res) => {
     res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
 
-
+// error handler
 app.use((err, req, res, next) => {
     console.log(err)
     const { statusCode = 500 } = err;
     if (!err.message) err.message = 'Something went wrong'
     res.status(statusCode).json({ error: err.message })
 })
-
 
 app.listen(PORT, () => {
     console.log(`Server listening on port ${PORT}...`);
